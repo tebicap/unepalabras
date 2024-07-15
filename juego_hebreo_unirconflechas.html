@@ -1,0 +1,368 @@
+<!-- 
+  Credit: Esteban Capella
+  Date: 2024
+  Description: Juego creado para el grupo Aprendizaje Hebreo Compartido - Español
+  -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>➡️</text></svg>">
+    <title>Une Palabras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            transition: background-color 0.4s ease;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+        }
+        .columns {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+            width: 30%;
+        }
+        .column-title {
+            color: #999;
+            margin-bottom: 10px;
+            font-weight: normal;
+            text-align: center;
+            width: 100%;
+        }
+        .word {
+            margin: 10px 0;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: white;
+            text-align: center;
+        }
+        .selected {
+            background-color: #e0e0e0;
+        }
+        .correct {
+            /* background-color: #90EE90; */
+            background-color: #beffbe;
+        }
+        #message_container {
+            display: none; /* estado inicial invisible, luego cambia a display: flex */
+            width: 98%;
+            justify-content: center;
+            position: absolute;
+            margin-left: -16px;
+            bottom: 0px;
+        }
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            /* width: 100%; */
+            left: 0;
+            background-color: #FFD700;
+            color: #000;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            animation: pulse 1s infinite;
+        }
+        #connectionLines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+        }
+        h1 {
+            align-self: center;
+            font-size: 24px;
+            color: #2f4757;
+            text-shadow: 0px 1px 3px #ffffffc2;
+            margin-bottom: 0px;
+        }
+        .encabezado {
+            position: fixed;
+            align-self: center;
+            top: 1vw;
+            color: #2f4757;
+        }
+        .edicion{
+            margin-top: 0px;
+            align-self: center;
+            color: #2f4757;
+            text-align: center;
+        }
+        .creditos{
+            position: fixed;
+            bottom: 10px;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="encabezado">
+            <h1>Une Con Flechas</h1>
+            <p class="edicion">Edición: palabras básicas 1</p>
+        </div>
+        <div class="columns">
+            <div class="column" id="spanish">
+                <div class="column-title">Español</div>
+            </div>
+            <div class="column" id="hebrew">
+                <div class="column-title">Hebreo</div>
+            </div>
+            <div class="column" id="phonetic">
+                <div class="column-title">Fonética</div>
+            </div>
+        </div>
+        <svg id="connectionLines"></svg>
+        <div id="message_container">
+            <div id="message"></div>
+        </div>
+        <div class="footer">para el grupo Aprendizaje Hebreo Compartido</div>
+    </div>
+
+    <div class="creditos">Idea diseño y programación: Esteban Capella</div>
+
+    <script>
+        const allWords = [
+            {spanish: "Hola", hebrew: "שלום", phonetic: "Shalóm"},
+            {spanish: "Gracias", hebrew: "תודה", phonetic: "Todá"},
+            {spanish: "Por favor", hebrew: "בבקשה", phonetic: "Bevakashá"},
+            {spanish: "Adiós", hebrew: "להתראות", phonetic: "Lehitraót"},
+            {spanish: "Sí", hebrew: "כן", phonetic: "Ken"},
+            {spanish: "No", hebrew: "לא", phonetic: "Lo"},
+            {spanish: "Buenas noches", hebrew: "לילה טוב", phonetic: "Láila tov"},
+            {spanish: "Buenos días", hebrew: "בוקר טוב", phonetic: "Bóker tov"},
+            {spanish: "¿Cómo estás?", hebrew: "מה שלומך?", phonetic: "Ma shlomjá?"},
+            {spanish: "Bien", hebrew: "טוב", phonetic: "Tov"},
+            {spanish: "Agua", hebrew: "מים", phonetic: "Máyim"},
+            {spanish: "Pan", hebrew: "לחם", phonetic: "Léjem"},
+            {spanish: "Yo", hebrew: "אני", phonetic: "Aní"},
+            {spanish: "Tú", hebrew: "אתה", phonetic: "Atá"},
+            {spanish: "Él", hebrew: "הוא", phonetic: "Hu"},
+            {spanish: "Ella", hebrew: "היא", phonetic: "Hi"},
+            {spanish: "Nosotros", hebrew: "אנחנו", phonetic: "Anájnu"},
+            {spanish: "Ustedes", hebrew: "אתם", phonetic: "Atém"},
+            {spanish: "Ellos", hebrew: "הם", phonetic: "Hem"},
+            {spanish: "Casa", hebrew: "בית", phonetic: "Báyit"},
+            {spanish: "Perro", hebrew: "כלב", phonetic: "Kélev"},
+            {spanish: "Gato", hebrew: "חתול", phonetic: "Jatúl"},
+            {spanish: "Libro", hebrew: "ספר", phonetic: "Séfer"},
+            {spanish: "Comer", hebrew: "לאכול", phonetic: "Leejól"},
+            {spanish: "Beber", hebrew: "לשתות", phonetic: "Lishtót"},
+            {spanish: "Dormir", hebrew: "לישון", phonetic: "Lishón"},
+            {spanish: "Hablar", hebrew: "לדבר", phonetic: "Ledabér"},
+            {spanish: "Escuchar", hebrew: "להקשיב", phonetic: "Lehakshív"},
+            {spanish: "Ver", hebrew: "לראות", phonetic: "Lirót"},
+            {spanish: "Ir", hebrew: "ללכת", phonetic: "Laléjet"},
+            {spanish: "Venir", hebrew: "לבוא", phonetic: "Lavó"},
+            {spanish: "Grande", hebrew: "גדול", phonetic: "Gadól"},
+            {spanish: "Pequeño", hebrew: "קטן", phonetic: "Katán"},
+            {spanish: "Bueno", hebrew: "טוב", phonetic: "Tov"},
+            {spanish: "Malo", hebrew: "רע", phonetic: "Ra"},
+            {spanish: "Nuevo", hebrew: "חדש", phonetic: "Jadásh"},
+            {spanish: "Viejo", hebrew: "ישן", phonetic: "Yashán"},
+            {spanish: "Caliente", hebrew: "חם", phonetic: "Jam"},
+            {spanish: "Frío", hebrew: "קר", phonetic: "Kar"},
+            {spanish: "Rápido", hebrew: "מהיר", phonetic: "Mahír"},
+            {spanish: "Lento", hebrew: "איטי", phonetic: "Ití"},
+            {spanish: "Hola", hebrew: "היי", phonetic: "Hai"},
+            {spanish: "¿Qué tal?", hebrew: "מה נשמע", phonetic: "Ma nishmá"},
+            {spanish: "Buen día", hebrew: "יום טוב", phonetic: "Yom tov"},
+            {spanish: "Buenas", hebrew: "שלום", phonetic: "Shalóm"},
+            {spanish: "Hola (informal)", hebrew: "אהלן", phonetic: "Ahlan"},
+            {spanish: "¿Todo bien?", hebrew: "הכל בסדר", phonetic: "Hakol beséder"},
+            {spanish: "Buenas tardes", hebrew: "ערב טוב", phonetic: "Érev tov"},
+            {spanish: "Hasta luego", hebrew: "ביי", phonetic: "Bai"},
+            {spanish: "Nos vemos", hebrew: "נתראה", phonetic: "Nitraé"},
+            {spanish: "Chao", hebrew: "יאללה ביי", phonetic: "Yalla bai"},
+            {spanish: "Bienvenido", hebrew: "ברוך הבא", phonetic: "Baruj habá"},
+            {spanish: "¿Qué hay?", hebrew: "מה קורה", phonetic: "Ma koré"},
+            {spanish: "¿Cómo va?", hebrew: "מה העניינים", phonetic: "Ma hainyaním"},
+            {spanish: "Shalom", hebrew: "שלום", phonetic: "Shalóm"},
+            {spanish: "Feliz semana", hebrew: "שבוע טוב", phonetic: "Shavúa tov"}
+        ];
+
+        let words = [];
+        const columns = {
+            spanish: document.getElementById("spanish"),
+            hebrew: document.getElementById("hebrew"),
+            phonetic: document.getElementById("phonetic")
+        };
+
+        let selectedWords = {};
+        let correctPairs = 0;
+        const connectionLines = document.getElementById("connectionLines");
+        let current_random_color = "";
+        let color_linea_juego = "no";
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function selectRandomWords() {
+            shuffleArray(allWords);
+            words = allWords.slice(0, Math.min(8, allWords.length));
+        }
+
+        function createWords() {
+            selectRandomWords();
+            for (const column in columns) {
+                const shuffledWords = [...words];
+                shuffleArray(shuffledWords);
+                shuffledWords.forEach(word => {
+                    const wordElement = document.createElement("div");
+                    wordElement.classList.add("word");
+                    wordElement.textContent = word[column];
+                    wordElement.addEventListener("click", () => selectWord(wordElement, column, word));
+                    columns[column].appendChild(wordElement);
+                });
+            }
+        }
+
+        function selectWord(element, column, word) {
+            if (element.classList.contains("correct")) return;
+
+            if (selectedWords[column]) {
+                selectedWords[column].element.classList.remove("selected");
+            }
+
+            element.classList.add("selected");
+            selectedWords[column] = {element, word};
+
+            drawConnections();
+            
+            if (Object.keys(selectedWords).length === 3) {
+                checkWords();
+            }
+        }
+
+        function drawConnections() {
+            connectionLines.querySelectorAll('line[data-temp="true"]').forEach(line => {
+                line.remove();
+            });
+
+            const columnOrder = ["spanish", "hebrew", "phonetic"];
+            const color = getRandomColor();
+            current_random_color = color;
+            if (color_linea_juego == "no"){
+                color_linea_juego = color;
+            }
+
+            for (let i = 0; i < columnOrder.length - 1; i++) {
+                const startColumn = columnOrder[i];
+                const endColumn = columnOrder[i + 1];
+
+                if (selectedWords[startColumn] && selectedWords[endColumn]) {
+                    const start = selectedWords[startColumn].element.getBoundingClientRect();
+                    const end = selectedWords[endColumn].element.getBoundingClientRect();
+                    const containerRect = document.querySelector('.game-container').getBoundingClientRect();
+
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", start.right - containerRect.left -1);
+                    line.setAttribute("y1", start.top + start.height / 2 - containerRect.top);
+                    line.setAttribute("x2", end.left - containerRect.left +1);
+                    line.setAttribute("y2", end.top + end.height / 2 - containerRect.top);
+                    line.setAttribute("stroke", color_linea_juego);
+                    line.setAttribute("stroke-width", "2");
+                    line.setAttribute("data-temp", "true");
+                    connectionLines.appendChild(line);
+                }
+            }
+        }
+
+        function getRandomColor() {
+            return '#' + Math.floor(Math.random()*16777215).toString(16);
+        }
+
+        function checkWords() {
+            const selectedWordsArray = Object.values(selectedWords);
+            if (selectedWordsArray[0].word === selectedWordsArray[1].word && selectedWordsArray[1].word === selectedWordsArray[2].word) {
+                selectedWordsArray.forEach(w => {
+                    w.element.classList.remove("selected");
+                    w.element.classList.add("correct");
+                    w.element.style.borderColor=color_linea_juego;
+                });
+
+                correctPairs++;
+
+                    color_linea_juego = "no";
+                
+                <!-- if (color_linea_juego == "no"){ //defino color para este juego -->
+                <!--     color_linea_juego = current_random_color; -->
+                <!-- } -->
+                
+                connectionLines.querySelectorAll('line[data-temp="true"]').forEach(line => {
+                    line.removeAttribute("data-temp");
+                });
+                
+                if (correctPairs === words.length) {
+                    document.getElementById("message").textContent = "¡Felicidades! Has completado el juego correctamente.";
+                    document.getElementById("message_container").style.display = "flex";
+                    startBackgroundAnimation();
+                }
+            } else {
+                selectedWordsArray.forEach(w => {
+                    w.element.classList.remove("selected");
+                });
+                connectionLines.querySelectorAll('line[data-temp="true"]').forEach(line => {
+                    line.remove();
+                });
+                color_linea_juego = "no";
+            }
+            selectedWords = {};
+        }
+        function startBackgroundAnimation() {
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'];
+            let index = 0;
+            setInterval(() => {
+                document.body.style.backgroundColor = colors[index];
+                index = (index + 1) % colors.length;
+            }, 400);
+        }
+
+        createWords();
+    </script>
+</body>
+</html>
