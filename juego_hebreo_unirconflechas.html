@@ -12,11 +12,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>➡️</text></svg>">
     <title>Une Palabras</title>
     <style>
-        html {
-            background-image: url('textura_diamantes.png');
-        }
         body {
-            
             background-image: url('textura_diamantes.png');
             font-family: Arial, sans-serif;
             display: flex;
@@ -65,15 +61,13 @@
             background-color: white;
             text-align: center;
         }
-        @media (max-aspect-ratio: 9/16) {
+        @media (max-height: 600px) {
             .word{
                 margin: 4px 0;
+                color: red;
             }
             .game-container{
                 padding-bottom: 8px;
-            }
-            .body{
-                background-color: red;
             }
         }
         .selected {
