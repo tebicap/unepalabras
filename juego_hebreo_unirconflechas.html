@@ -146,6 +146,14 @@
             font-size: 13px;
             color: #999;
         }
+        .boton-reiniciar{
+            background-color: white;
+            border: 1px solid #ff005a;
+            border-radius: 3px;
+            color: #ff005a;
+            margin-top: 7px;
+            padding: 3px 5px 2px 5px;
+        }
     </style>
 </head>
 <body>
@@ -172,7 +180,7 @@
         <div class="footer">para el grupo Aprendizaje Hebreo Compartido</div>
     </div>
 
-    <div class="creditos">Idea diseño y programación: Esteban Capella</div>
+    <div class="creditos">Idea, diseño y programación: Esteban Capella</div>
 
     <script>
         const allWords = [
@@ -351,7 +359,7 @@
                 });
                 
                 if (correctPairs === words.length) {
-                    document.getElementById("message").textContent = "¡Felicidades! Has completado el juego correctamente.";
+                    document.getElementById("message").innerHTML = "¡Felicidades! Has completado el juego correctamente.<br><button class='boton-reiniciar' onclick='location.reload()'>REINICIAR</button>";
                     document.getElementById("message_container").style.display = "flex";
                     startBackgroundAnimation();
                 }
@@ -373,6 +381,7 @@
                 document.body.style.backgroundColor = colors[index];
                 index = (index + 1) % colors.length;
             }, 400);
+            document.body.style.backgroundImage = "none";
         }
 
         createWords();
